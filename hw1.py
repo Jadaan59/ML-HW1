@@ -1,6 +1,5 @@
 ###### Your ID ######
-# ID1: 123456789
-# ID2: 987654321
+# ID1: 318482940
 #####################
 
 # imports 
@@ -109,7 +108,9 @@ def gradient_descent(X, y, theta, eta, num_iters):
     ###########################################################################
     # TODO: Implement the gradient descent optimization algorithm.            #
     ###########################################################################
-    pass
+    for i in range(num_iters):
+        J_history.append(compute_loss(X, y, theta))
+        theta = update_theta(X, y, theta, eta)
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -131,12 +132,11 @@ def compute_pinv(X, y):
     Returns:
     - pinv_theta: The optimal parameters of your model.
     """
-    
     pinv_theta = []
     ###########################################################################
     # TODO: Implement the pseudoinverse algorithm.                            #
     ###########################################################################
-    pass
+    pinv_theta = np.linalg.inv(X.T.dot(X)).dot(X.T).dot(y)
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -248,3 +248,25 @@ def create_square_features(df):
     #                             END OF YOUR CODE                            #
     ###########################################################################
     return df_poly
+
+
+def update_theta(X,y,theta, eta):
+    """
+    Helper function that update the parameters of the model using gradient descent.
+
+    Args:
+    - X: Input data (n instances over p features).
+    - y: True labels (n instances).
+    - theta: The parameters (weights) of the model being learned.
+    - eta: The learning rate of the model.
+
+    Returns:
+        new theta: The updated parameters of the model.
+    """
+    if X.shape[1] + 1 == theta.shape[0]:
+        X = apply_bias_trick(X)
+    n = X.shape[0]
+    predictions = X @ theta
+    errors = predictions - y
+    gradients = (1/n) * (X.T @ errors)
+    return (theta - (eta * gradients))
