@@ -72,6 +72,8 @@ def compute_loss(X, y, theta):
     ###########################################################################
     # TODO: Implement the MSE loss function.                                  #
     ###########################################################################
+    if X.shape[1] + 1 == theta.shape[0]:
+        X = apply_bias_trick(X)
     n = X.shape[0]
     preds = X @ theta
     errors = preds - y
