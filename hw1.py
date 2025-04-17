@@ -76,7 +76,7 @@ def compute_loss(X, y, theta):
     n = X.shape[0]
     preds = X @ theta
     errors = preds - y
-    J = (1 / (2 * n)) * np.sum(errors ** 2)
+    J = (np.sum(np.power(errors, 2)) / (2 * n))
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -203,7 +203,7 @@ def find_best_learning_rate(X_train, y_train, X_val, y_val, iterations):
     for eta in etas:
         #Choose arbitrary theta
         np.random.seed(42)
-        theta = np.random.random(size=X.shape[1])
+        theta = np.random.random(size=X_train.shape[1])
         # Compute best theta by gradient descent by the eta. For later i will check the covergent rate using J_history
         theta,J_history = gradient_descent(X_train, y_train, theta, eta, iterations)
         eta_dict[eta] = compute_loss(X_val, y_val, theta)
@@ -276,10 +276,5 @@ def update_theta(X,y,theta, eta):
     Returns:
         new theta: The updated parameters of the model.
     """
-    if X.shape[1] + 1 == theta.shape[0]:
-        X = apply_bias_trick(X)
-    n = X.shape[0]
-    predictions = X @ theta
-    errors = predictions - y
-    gradients = (1/n) * (X.T @ errors)
-    return (theta - (eta * gradients))
+
+    return theta - np.dot((np.dot(X, theta) - y), X) * eta / X.shape[0]
