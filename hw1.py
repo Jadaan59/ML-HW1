@@ -162,11 +162,18 @@ def gradient_descent_stop_condition(X, y, theta, eta, max_iter, epsilon=1e-8):
     """
     
     theta = theta.copy() # optional: theta outside the function will not change
-    J_history = [] # Use a python list to save the loss value in every iteration
+    J_history = []  # Use a python list to save the loss value in every iteration
+    loss = 0
     ###########################################################################
     # TODO: Implement the gradient descent with stop condition optimization algorithm.  #
     ###########################################################################
-    pass
+    for i in range(max_iter):
+        theta = update_theta(X, y, theta, eta)
+        new_loss = compute_loss(X, y, theta)
+        J_history.append(new_loss)
+        if loss != 0 and loss - new_loss < epsilon:
+            break
+        loss = new_loss
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -193,7 +200,13 @@ def find_best_learning_rate(X_train, y_train, X_val, y_val, iterations):
     ###########################################################################
     # TODO: Implement the function and find the best eta value.             #
     ###########################################################################
-    pass
+    for eta in etas:
+        #Choose arbitrary theta
+        np.random.seed(42)
+        theta = np.random.random(size=X.shape[1])
+        # Compute best theta by gradient descent by the eta. For later i will check the covergent rate using J_history
+        theta,J_history = gradient_descent(X_train, y_train, theta, eta, iterations)
+        eta_dict[eta] = compute_loss(X_val, y_val, theta)
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
