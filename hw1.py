@@ -276,5 +276,6 @@ def update_theta(X,y,theta, eta):
     Returns:
         new theta: The updated parameters of the model.
     """
-
-    return theta - np.dot((np.dot(X, theta) - y), X) * eta / X.shape[0]
+    n = X.shape[0]
+    gradient = X.T @ (X @ theta - y)/ n
+    return theta - eta * gradient
