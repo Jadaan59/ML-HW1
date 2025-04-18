@@ -21,17 +21,13 @@ def preprocess(X,y):
     ###########################################################################
     # TODO: Implement the normalization function.                             #
     ###########################################################################
-    try:
-        normalized_X = (X - X.mean(axis=0)) / X.std(axis=0)
-        normalized_y = (y - y.mean()) / y.std()
-        return normalized_X, normalized_y
-    except ZeroDivisionError:
-        print("Standard deviation is zero — can't normalize!")
+    normalized_X = (X - X.mean(axis=0)) / X.std(axis=0)
+    normalized_y = (y - y.mean()) / y.std()
 
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
-
+    return normalized_X, normalized_y
 
 def apply_bias_trick(X):
     """
@@ -71,12 +67,10 @@ def compute_loss(X, y, theta):
     ###########################################################################
     # TODO: Implement the MSE loss function.                                  #
     ###########################################################################
-    if X.shape[1] + 1 == theta.shape[0]:
-        X = apply_bias_trick(X)
     n = X.shape[0]
     preds = X @ theta
     errors = preds - y
-    J = (np.sum(np.power(errors, 2)) / (2 * n))
+    J = np.sum(np.power(errors, 2)) / (2 * n)
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -108,9 +102,10 @@ def gradient_descent(X, y, theta, eta, num_iters):
     ###########################################################################
     # TODO: Implement the gradient descent optimization algorithm.            #
     ###########################################################################
+
     for i in range(num_iters):
-        J_history.append(compute_loss(X, y, theta))
         theta = update_theta(X, y, theta, eta)
+        J_history.append(compute_loss(X, y, theta))
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -167,13 +162,12 @@ def gradient_descent_stop_condition(X, y, theta, eta, max_iter, epsilon=1e-8):
     ###########################################################################
     # TODO: Implement the gradient descent with stop condition optimization algorithm.  #
     ###########################################################################
+
     for i in range(max_iter):
         theta = update_theta(X, y, theta, eta)
-        new_loss = compute_loss(X, y, theta)
-        J_history.append(new_loss)
-        if loss != 0 and loss - new_loss < epsilon:
+        J_history.append(compute_loss(X, y, theta))
+        if i > 0 and J_history[i-1] - J_history[i] < epsilon:
             break
-        loss = new_loss
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -205,7 +199,7 @@ def find_best_learning_rate(X_train, y_train, X_val, y_val, iterations):
         np.random.seed(42)
         theta = np.random.random(size=X_train.shape[1])
         # Compute best theta by gradient descent by the eta. For later i will check the covergent rate using J_history
-        theta,J_history = gradient_descent(X_train, y_train, theta, eta, iterations)
+        theta = gradient_descent_stop_condition(X_train, y_train, theta, eta, iterations)[0]
         eta_dict[eta] = compute_loss(X_val, y_val, theta)
     ###########################################################################
     #                             END OF YOUR CODE                            #
@@ -263,19 +257,9 @@ def create_square_features(df):
     return df_poly
 
 
-def update_theta(X,y,theta, eta):
-    """
-    Helper function that update the parameters of the model using gradient descent.
-
-    Args:
-    - X: Input data (n instances over p features).
-    - y: True labels (n instances).
-    - theta: The parameters (weights) of the model being learned.
-    - eta: The learning rate of the model.
-
-    Returns:
-        new theta: The updated parameters of the model.
-    """
+def update_theta(X, y, theta, eta):
     n = X.shape[0]
-    gradient = X.T @ (X @ theta - y)/ n
-    return theta - eta * gradient
+    gradient = X.T @ (X @ theta - y)
+    new_theta = theta - eta * gradient/ n
+    return new_theta
+
