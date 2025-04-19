@@ -23,7 +23,6 @@ def preprocess(X,y):
     ###########################################################################
     normalized_X = (X - X.mean(axis=0)) / X.std(axis=0)
     normalized_y = (y - y.mean()) / y.std()
-
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -102,7 +101,6 @@ def gradient_descent(X, y, theta, eta, num_iters):
     ###########################################################################
     # TODO: Implement the gradient descent optimization algorithm.            #
     ###########################################################################
-
     for i in range(num_iters):
         theta = update_theta(X, y, theta, eta)
         J_history.append(compute_loss(X, y, theta))
@@ -199,7 +197,7 @@ def find_best_learning_rate(X_train, y_train, X_val, y_val, iterations):
         np.random.seed(42)
         theta = np.random.random(size=X_train.shape[1])
         # Compute best theta by gradient descent by the eta. For later i will check the covergent rate using J_history
-        theta = gradient_descent_stop_condition(X_train, y_train, theta, eta, iterations)[0]
+        theta = gradient_descent(X_train, y_train, theta, eta, iterations)[0]
         eta_dict[eta] = compute_loss(X_val, y_val, theta)
     ###########################################################################
     #                             END OF YOUR CODE                            #
@@ -228,7 +226,39 @@ def forward_feature_selection(X_train, y_train, X_val, y_val, best_eta, iteratio
     #####c######################################################################
     # TODO: Implement the function and find the best eta value.             #
     ###########################################################################
-    pass
+    X_train = np.array(X_train, dtype=float)
+    X_val = np.array(X_val, dtype=float)
+    n_features = X_train.shape[1]
+
+
+    for _ in range(5):
+        best_j = None
+        best_loss = np.inf
+
+        # try adding each remaining feature
+        for j in range(n_features):
+            if j in selected_features:
+                continue
+
+            # candidate feature set
+            feats = selected_features + [j]
+
+            # subset and add bias
+            X_tr_sub = apply_bias_trick(X_train[:, feats])
+            X_val_sub = apply_bias_trick(X_val[:, feats])
+
+            # init theta
+            theta0 = np.random.random(size=X_train.shape[1], dtype=float)
+
+            # train and evaluate
+            theta_learned, _ = gradient_descent_stop_condition(X_tr_sub, y_train, theta0, best_eta, iterations)
+            loss = compute_loss(X_val_sub, y_val, theta_learned)
+
+            if loss < best_loss:
+                best_loss = loss
+                best_j = j
+
+        selected_features.append(best_j)
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -250,7 +280,9 @@ def create_square_features(df):
     ###########################################################################
     # TODO: Implement the function to add polynomial features                 #
     ###########################################################################
-    pass
+    # for each feature, add its square
+    for col in df.columns:
+        df_poly[f"{col}_squared"] = df[col] ** 2
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
